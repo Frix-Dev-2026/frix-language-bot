@@ -64,24 +64,9 @@ async def start_test(message: types.Message):
         is_cor = "1" if opt == correct else "0"
         builder.button(text=opt, callback_data=f"ans:{is_cor}:{word}")
     builder.adjust(1)
-    await message.answer(f"Как переводится: **{word.upper()}**?", reply_markup=builder.as_markup(), parse_mode="Markdown")
+    await message.answer(f"Как переводится: {word.upper()}?", reply_markup=builder.as_markup(), parse_mode="Markdown")
 
 @dp.callback_query(F.data.startswith("ans:"))
 async def handle_ans(callback: types.CallbackQuery):
     _, is_cor, word = callback.data.split(":")
-    if is_cor == "1":
-        await callback.message.edit_text(f"✅ ВЕРНО! **{word.upper()}**")
-    else:
-        await callback.message.edit_text(f"❌ ОШИБКА.")
-    builder = InlineKeyboardBuilder()
-    builder.button(text="Дальше ➡️", callback_data="next")
-    await callback.message.answer("Следующее слово:", reply_markup=builder.as_markup())
-    await callback.answer()
-    await start_test(callback.message)
-    await callback.answer()
-
-async def main():
-    await dp.start_polling(bot)
-
-if __name__ == "__main__":
-    asyncio.run(main())
+    if i
