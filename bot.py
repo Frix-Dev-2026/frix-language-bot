@@ -3,6 +3,7 @@ from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
+# Токен вашего бота
 API_TOKEN = '8717727996:AAHfCWTjEpn6-XCNh9utMaNGjiv0NxplToQ'
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
@@ -68,5 +69,3 @@ async def start_test(message: types.Message):
 
 @dp.callback_query(F.data.startswith("ans:"))
 async def handle_ans(callback: types.CallbackQuery):
-    _, is_cor, word = callback.data.split(":")
-    if i
