@@ -77,6 +77,11 @@ async def handle_ans(callback: types.CallbackQuery):
     builder.button(text="Дальше ➡️", callback_data="next")
     await callback.message.answer("Следующее слово:", reply_markup=builder.as_markup())
     await callback.answer()
+    await start_test(callback.message)
+    await callback.answer()
 
-@dp.callback_query(F.data == "next")
-async def next_word(ca
+async def main():
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    asyncio.run(main())
