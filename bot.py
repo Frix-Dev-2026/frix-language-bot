@@ -5,7 +5,7 @@ from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
-# ВНИМАНИЕ: Проверьте ваш токен ниже!
+# ВНИМАНИЕ: Вставь свой токен сюда между кавычек!
 API_TOKEN = '8717727996:AAHfCWTjEpn6-XCNh9utMaNGjiv0NxplToQ'
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
@@ -73,30 +73,9 @@ async def sel_lang(m: types.Message):
     kb = ReplyKeyboardBuilder()
     kb.add(types.KeyboardButton(text="Учить ✨"), types.KeyboardButton(text="⬅️ Назад"))
     kb.adjust(1)
-    await m.answer(f"Выбран курс: {lang}", reply_markup=kb.as_markup(resize_keyboard=True))@dp.message(F.text == "Учить ✨")
+    await m.answer(f"Выбран курс: {lang}", reply_markup=kb.as_markup(resize_keyboard=True))
+
+@dp.message(F.text == "Учить ✨")
 async def quiz(m: types.Message):
     user_id = m.from_user.id
-    conn = sqlite3.connect('frix_edu.db')
-    cursor = conn.cursor()
-    cursor.execute('SELECT language FROM users WHERE user_id = ?', (user_id,))
-    res = cursor.fetchone()
-    conn.close()if not res:
-    await m.answer("Сначала выбери курс!")
-    return
-    
-lang = res[0]
-words_dict = LESSONS[lang]
-word, data = random.choice(list(words_dict.items()))
-translation, transcription = data[0], data[1]
-
-others = [v[0] for k, v in words_dict.items() if k != word]
-options = random.sample(others, 2) + [translation]
-random.shuffle(options)
-
-kb = InlineKeyboardBuilder()
-for opt in options:
-    cb_data = f"ans_{'win' if opt == translation else 'lose'}_{word}_{translation}_{transcription}"
-    kb.add(types.InlineKeyboardButton(text=opt, callback_data=cb_data))
-kb.adjust(1)
-
-await m.answer(f"Как переводится слово: **{word}**?", reply_markup=kb.as_markup(), parse_mode="Markdown")
+    con
