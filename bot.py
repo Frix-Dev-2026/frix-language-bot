@@ -6,7 +6,7 @@ from aiogram.filters import Command
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
 # ПРОВЕРЬ ТОКЕН!
-API_TOKEN = '8717727996:AAHfCWTjEpn6-XCNh9utMaNGjiv0NxplToQ'
+8717727996:AAHfCWTjEpn6-XCNh9utMaNGjiv0NxplToQ
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
 
