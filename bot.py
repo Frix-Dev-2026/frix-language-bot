@@ -12,25 +12,28 @@ LESSONS = {
     "Russian 🇷🇺": {"pri-vet": "hello", "vo-da": "water", "hleb": "bread"}
 }
 
+# Функция инициализации БД (теперь более надежная)
 def init_db():
     conn = sqlite3.connect('frix_edu.db')
     cursor = conn.cursor()
-    cursor.execute('CREATE TABLE IF NOT EXISTS users (user_id INTEGER PRIMARY KEY, language TEXT)')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS users 
+                      (user_id INTEGER PRIMARY KEY, language TEXT)''')
     conn.commit()
     conn.close()
 
 @dp.message(Command("start"))
 @dp.message(F.text == "⬅️ Назад")
 async def start(m: types.Message):
-    init_db()
+    init_db() # Создаем таблицу сразу при старте!
     kb = ReplyKeyboardBuilder()
     for l in LESSONS.keys(): kb.add(types.KeyboardButton(text=l))
     kb.adjust(1)
-    await m.answer(f"Привет, {m.from_user.first_name}!", reply_markup=kb.as_markup(resize_keyboard=True))
+    await m.answer(f"Привет, {m.from_user.first_name}! 👋\nВыбери язык:", reply_markup=kb.as_markup(resize_keyboard=True))
 
 @dp.message(F.text.in_(LESSONS.keys()))
 async def sel_lang(m: types.Message):
     user_id, lang = m.from_user.id, m.text
+    init_db() # На всякий случай проверяем БД и тут
     conn = sqlite3.connect('frix_edu.db')
     cursor = conn.cursor()
     cursor.execute('INSERT OR REPLACE INTO users (user_id, language) VALUES (?, ?)', (user_id, lang))
@@ -49,7 +52,9 @@ async def quiz(m: types.Message):
     cursor.execute('SELECT language FROM users WHERE user_id = ?', (user_id,))
     res = cursor.fetchone()
     conn.close()
-    if not res: return
+    if not res: 
+        await m.answer("Сначала выбери язык!")
+        return
     lang = res[0]
     words = LESSONS[lang]
     word = random.choice(list(words.keys()))
@@ -58,7 +63,7 @@ async def quiz(m: types.Message):
     kb.button(text=ans, callback_data="win")
     kb.button(text="В меню", callback_data="exit")
     kb.adjust(1)
-    await m.answer(f"Как переводится: {word}?", reply_markup=kb.as_markup())
+    await m.answer(f"Как переводится: {word.upper()}?", reply_markup=kb.as_markup())
 
 @dp.callback_query(F.data == "win")
 async def win(cb: types.CallbackQuery):
@@ -70,6 +75,9 @@ async def ex(cb: types.CallbackQuery):
     await cb.message.delete()
     await start(cb.message)
 
-async def main(): await dp.start_polling(bot)
+async def main():
+    init_db() # Инициализация при запуске бота
+    await dp.start_polling(bot)
 
-if __name__ == "__main__": asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
