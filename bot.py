@@ -5,7 +5,7 @@ from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
-# Токен (замени на свой, если нужно)
+# ПРОВЕРЬ ТОКЕН!
 API_TOKEN = '8717727996:AAHfCWTjEpn6-XCNh9utMaNGjiv0NxplToQ'
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
@@ -46,8 +46,7 @@ async def start(m: types.Message):
     kb.add(types.KeyboardButton(text="Курс слов 📚"), types.KeyboardButton(text="Алфавит 🔡"))
     kb.adjust(1)
     await m.answer(f"Привет, {m.from_user.first_name}! 👋\nВыбери обучение:", reply_markup=kb.as_markup(resize_keyboard=True))
-
-@dp.message(F.text == "Алфавит 🔡")
+    @dp.message(F.text == "Алфавит 🔡")
 async def show_alph(m: types.Message):
     await m.answer(f"🔡 **English Alphabet:**\n{ALPHABET_EN}", parse_mode="Markdown")
     await m.answer(f"🔡 **Русский алфавит:**\n{ALPHABET_RU}", parse_mode="Markdown")
@@ -67,4 +66,21 @@ async def sel_lang(m: types.Message):
     user_id, lang = m.from_user.id, m.text
     conn = sqlite3.connect('frix_edu.db')
     cursor = conn.cursor()
-    cursor.execute('INSERT OR REPLACE INTO users (user_id, language) VALUES
+    cursor.execute('INSERT OR REPLACE INTO users (user_id, language) VALUES (?, ?)', (user_id, lang))
+    conn.commit()
+    conn.close()
+    kb = ReplyKeyboardBuilder()
+    kb.add(types.KeyboardButton(text="Учить ✨"), types.KeyboardButton(text="⬅️ Назад"))
+    kb.adjust(1)
+    await m.answer(f"Выбран курс: {lang}", reply_markup=kb.as_markup(resize_keyboard=True))
+
+@dp.message(F.text == "Учить ✨")
+async def quiz(m: types.Message):
+    user_id = m.from_user.id
+    conn = sqlite3.connect('frix_edu.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT language FROM users WHERE user_id = ?', (user_id,))
+    res = cursor.fetchone()
+    conn.close()
+    if not res:
+        await m.answer("Сначала выбери
