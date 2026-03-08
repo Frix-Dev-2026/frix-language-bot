@@ -5,7 +5,7 @@ from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
-# ВНИМАНИЕ: Вставь свой токен сюда между кавычек!
+# Токен (замени на свой, если нужно)
 API_TOKEN = '8717727996:AAHfCWTjEpn6-XCNh9utMaNGjiv0NxplToQ'
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
@@ -67,15 +67,4 @@ async def sel_lang(m: types.Message):
     user_id, lang = m.from_user.id, m.text
     conn = sqlite3.connect('frix_edu.db')
     cursor = conn.cursor()
-    cursor.execute('INSERT OR REPLACE INTO users (user_id, language) VALUES (?, ?)', (user_id, lang))
-    conn.commit()
-    conn.close()
-    kb = ReplyKeyboardBuilder()
-    kb.add(types.KeyboardButton(text="Учить ✨"), types.KeyboardButton(text="⬅️ Назад"))
-    kb.adjust(1)
-    await m.answer(f"Выбран курс: {lang}", reply_markup=kb.as_markup(resize_keyboard=True))
-
-@dp.message(F.text == "Учить ✨")
-async def quiz(m: types.Message):
-    user_id = m.from_user.id
-    con
+    cursor.execute('INSERT OR REPLACE INTO users (user_id, language) VALUES
