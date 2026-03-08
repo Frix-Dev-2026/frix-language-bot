@@ -74,12 +74,11 @@ async def handle_ans(callback: types.CallbackQuery):
         await callback.message.edit_text(f"✅ ВЕРНО! {word.upper()}")
     else:
         await callback.message.edit_text(f"❌ ОШИБКА.")
-    
-    # Чтобы не плодить сообщения, просто вызываем новое слово
     await start_test(callback.message)
     await callback.answer()
 
 async def main():
     await dp.start_polling(bot)
 
-if __name__ ==
+if __name__ == "__main__":
+    asyncio.run(main())
