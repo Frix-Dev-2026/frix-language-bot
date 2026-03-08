@@ -10,30 +10,12 @@ dp = Dispatcher()
 LESSONS = {
     "English for Russians 🇬🇧/🇷🇺": {
         "hello": ["привет", "[хелоу]"], "water": ["вода", "[уотер]"], "bread": ["хлеб", "[брэд]"],
-        "friend": ["друг", "[фрэнд]"], "money": ["деньги", "[мани]"], "home": ["дом", "[хоум]"],
-        "apple": ["яблоко", "[эпл]"], "school": ["школа", "[скул]"], "book": ["книга", "[бук]"],
-        "mother": ["мама", "[мазер]"], "father": ["папа", "[фазер]"], "sister": ["сестра", "[систер]"],
-        "brother": ["брат", "[бразер]"], "sun": ["солнце", "[сан]"], "moon": ["луна", "[мун]"],
-        "star": ["звезда", "[стар]"], "cat": ["кот", "[кэт]"], "dog": ["собака", "[дог]"],
-        "car": ["машина", "[кар]"], "city": ["город", "[сити]"], "way": ["путь", "[уэй]"],
-        "time": ["время", "[тайм]"], "day": ["день", "[дэй]"], "night": ["ночь", "[найт]"],
-        "man": ["мужчина", "[мэн]"], "woman": ["женщина", "[вумэн]"], "child": ["ребенок", "[чайлд]"],
-        "tree": ["дерево", "[три]"], "food": ["еда", "[фуд]"], "sky": ["небо", "[скай]"]
+        "friend": ["друг", "[фрэнд]"], "money": ["деньги", "[мани]"]
     },
     "Русский для Англичан 🇷🇺/🇬🇧": {
-        "привет (privet)": ["hello", "[pree-vyet]"], "вода (voda)": ["water", "[va-da]"],
-        "хлеб (khleb)": ["bread", "[hlyeb]"], "друг (drug)": ["friend", "[droog]"],
-        "деньги (dengi)": ["money", "[dyen-gee]"], "дом (dom)": ["home", "[dom]"],
-        "мама (mama)": ["mother", "[ma-ma]"], "книга (kniga)": ["book", "[k-nee-ga]"],
-        "папа (papa)": ["father", "[pa-pa]"], "сестра (sestra)": ["sister", "[syes-tra]"],
-        "брат (brat)": ["brother", "[brat]"], "солнце (solntse)": ["sun", "[soln-tse]"],
-        "луна (luna)": ["moon", "[loo-na]"], "звезда (zvezda)": ["star", "[zvyez-da]"],
-        "машина (mashina)": ["car", "[ma-shee-na]"], "город (gorod)": ["city", "[go-rat]"]
+        "привет": ["hello", "[pree-vyet]"], "вода": ["water", "[va-da]"], "хлеб": ["bread", "[hlyeb]"]
     }
 }
-
-ALPHABET_EN = "A [эй], B [би], C [си], D [ди], E [и], F [эф], G [джи], H [эйч], I [ай], J [джей], K [кей], L [эл], M [эм], N [эн], O [оу], P [пи], Q [кью], R [ар], S [эс], T [ти], U [ю], V [ви], W [дабл-ю], X [экс], Y [уай], Z [зед]"
-ALPHABET_RU = "А [A], Б [B], В [V], Г [G], Д [D], Е [Ye], Ё [Yo], Ж [Zh], З [Z], И [Ee], Й [Y], К [K], Л [L], М [M], Н [N], О [O], П [P], Р [R], С [S], Т [T], У [U], Ф [F], Х [Kh], Ц [Ts], Ч [Ch], Ш [Sh], Щ [Shch], Ъ [-], Ы [Y], Ь ['], Э [E], Ю [Yu], Я [Ya]"
 
 def init_db():
     conn = sqlite3.connect('frix_edu.db')
@@ -43,20 +25,64 @@ def init_db():
     conn.close()
 
 @dp.message(Command("start"))
-@dp.message(F.text == "⬅️ В начало / Main Menu")
+@dp.message(F.text == "⬅️ В начало")
 async def cmd_start(message: types.Message):
     init_db()
     builder = ReplyKeyboardBuilder()
-    builder.add(types.KeyboardButton(text="Курс слов / Word Course 📚"))
-    builder.add(types.KeyboardButton(text="Алфавит / Alphabet 🔡"))
+    builder.add(types.KeyboardButton(text="Курс слов 📚"), types.KeyboardButton(text="Алфавит 🔡"))
     builder.adjust(1)
-    await message.answer(f"Привет, {message.from_user.first_name}! 👋\nВыбери раздел:", reply_markup=builder.as_markup(resize_keyboard=True))
+    await message.answer(f"Привет, {message.from_user.first_name}!", reply_markup=builder.as_markup(resize_keyboard=True))
 
-@dp.message(F.text == "Алфавит / Alphabet 🔡")
-async def select_alphabet(message: types.Message):
+@dp.message(F.text == "Алфавит 🔡")
+async def show_alph(message: types.Message):
+    await message.answer("ABC... / АБВ...")
+
+@dp.message(F.text == "Курс слов 📚")
+@dp.message(F.text == "⬅️ Назад")
+async def sel_course(message: types.Message):
     builder = ReplyKeyboardBuilder()
-    builder.add(types.KeyboardButton(text="English Alphabet 🇬🇧"))
-    builder.add(types.KeyboardButton(text="Русский алфавит 🇷🇺"))
-    builder.add(types.KeyboardButton(text="⬅️ В начало / Main Menu"))
+    for l in LESSONS.keys(): builder.add(types.KeyboardButton(text=l))
     builder.adjust(1)
-    await message.answer("Какой алфавит показать?", reply_markup=builder.as_markup(resize_keyboard=True
+    await message.answer("Выбери курс:", reply_markup=builder.as_markup(resize_keyboard=True))
+
+@dp.message(F.text.in_(LESSONS.keys()))
+async def sel_lang(message: types.Message):
+    user_id, lang = message.from_user.id, message.text
+    conn = sqlite3.connect('frix_edu.db')
+    cursor = conn.cursor()
+    cursor.execute('INSERT OR REPLACE INTO users (user_id, language) VALUES (?, ?)', (user_id, lang))
+    conn.commit()
+    conn.close()
+    builder = ReplyKeyboardBuilder()
+    builder.add(types.KeyboardButton(text="Учить ✨"), types.KeyboardButton(text="⬅️ Назад"))
+    builder.adjust(1)
+    await message.answer(f"Курс: {lang}", reply_markup=builder.as_markup(resize_keyboard=True))
+
+@dp.message(F.text == "Учить ✨")
+async def start_test(message: types.Message):
+    user_id = message.from_user.id
+    conn = sqlite3.connect('frix_edu.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT language FROM users WHERE user_id = ?', (user_id,))
+    res = cursor.fetchone()
+    conn.close()
+    if not res: return
+    lang = res[0]
+    words = LESSONS[lang]
+    word = random.choice(list(words.keys()))
+    corr = words[word][0]
+    builder = InlineKeyboardBuilder()
+    builder.button(text=corr, callback_data="win")
+    builder.button(text="Выход", callback_data="exit")
+    builder.adjust(1)
+    await message.answer(f"Как переводится: {word}?", reply_markup=builder.as_markup())
+
+@dp.callback_query(F.data == "win")
+async def win(cb: types.CallbackQuery):
+    await cb.message.edit_text("✅ ВЕРНО!")
+    await start_test(cb.message)
+
+@dp.callback_query(F.data == "exit")
+async def ex(cb: types.CallbackQuery):
+    await cb.message.delete()
+    await cmd_start(
